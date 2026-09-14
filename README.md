@@ -20,6 +20,33 @@ Right CoinFT -> FT232R #2 -> USB -> NUC
 
 ---
 
+<a id="quick-navigation"></a>
+## 원하는 작업으로 바로 가기
+
+아래에서 **하고 싶은 결과**를 누르면 필요한 설명과 실행 예시가 있는 위치로 바로 이동합니다.
+
+| 원하는 결과 | 바로가기 |
+|---|---|
+| 처음 설치하고 환경 만들기 | [환경 설정](#environment-setup) |
+| `Permission denied` 없이 USB serial 사용하기 | [Serial 권한 설정](#serial-permission) |
+| 현재 연결된 AnySkin / CoinFT 포트 찾기 | [장치 확인](#check-devices) |
+| AnySkin 실시간 시각화 | [AnySkin 시각화](#anyskin-visualization) |
+| AnySkin raw 15D 값을 터미널에서 보기 | [AnySkin raw 읽기](#anyskin-raw) |
+| AnySkin raw를 CSV로 저장 | [AnySkin CSV 저장](#anyskin-csv) |
+| CoinFT 한 개의 raw 12채널 보기 | [CoinFT raw 읽기](#coinft-raw) |
+| CoinFT tare-zeroed raw 보기 | [CoinFT zeroed raw](#coinft-zeroed) |
+| CoinFT `Fx Fy Fz Mx My Mz` 보기 | [CoinFT 6-axis F/T](#coinft-wrench) |
+| CoinFT 한 개 실시간 시각화 | [CoinFT single 시각화](#coinft-single-viz) |
+| CoinFT 두 개 Left/Right 동시 시각화 | [CoinFT dual 시각화](#coinft-dual-viz) |
+| CoinFT 한 개 데이터를 CSV로 저장 | [CoinFT single CSV](#coinft-single-csv) |
+| CoinFT 두 개 데이터를 CSV로 저장 | [CoinFT dual CSV](#coinft-dual-csv) |
+| 주기적 spike / 권한 / 포트 문제 해결 | [Known pitfalls](#known-pitfalls) |
+| 새 PC에서 처음부터 끝까지 순서대로 검증 | [권장 bring-up 순서](#bringup-sequence) |
+
+> 가장 빠른 기능 확인만 필요하면 [권장 bring-up 순서](#bringup-sequence)를 따라가세요.
+
+---
+
 ## 1. Repository structure
 
 ```text
@@ -54,6 +81,7 @@ UMI_sensor_release/
 
 ---
 
+<a id="environment-setup"></a>
 # 2. Environment setup
 
 ## Recommended: one Conda environment for both sensors
@@ -96,6 +124,7 @@ Official CoinFT: https://github.com/coin-ft/coin-ft
 
 ---
 
+<a id="serial-permission"></a>
 # 3. Serial permission setup (Ubuntu)
 
 먼저 현재 계정이 serial device를 열 수 있도록 `dialout` 그룹에 추가하는 것을 권장합니다.
@@ -105,6 +134,8 @@ sudo usermod -aG dialout $USER
 ```
 
 그 후 **로그아웃 → 다시 로그인**합니다.
+
+> `sudo chmod a+rw /dev/ttyUSB0`는 **일회성 임시 해결책**입니다. USB를 뽑으면 해당 `/dev/ttyUSB0` device node가 사라지고, 다시 꽂을 때 `udev`가 새 device node를 만들기 때문에 수동 `chmod` 권한도 사라집니다. 반복해서 `chmod`하지 말고 `dialout` 그룹을 영구 해결책으로 사용하세요.
 
 확인:
 
@@ -124,6 +155,7 @@ sudo chmod a+rw /dev/ttyUSB1
 
 ---
 
+<a id="check-devices"></a>
 # 4. Check connected devices
 
 센서를 USB에 연결한 뒤:
@@ -175,6 +207,7 @@ USB 케이블은 **data 통신 가능한 케이블**이어야 합니다. 전원�
 ls /dev/ | grep -E 'ACM|USB'
 ```
 
+<a id="anyskin-visualization"></a>
 ## 5.2 Official visualization (recommended)
 
 ```bash
@@ -184,6 +217,7 @@ anyskin_viz /dev/ttyACM0
 - tactile 반응이 실시간으로 표시됩니다.
 - 시간이 지나 zero가 drift하면 **`B`** 키로 baseline을 다시 잡습니다.
 
+<a id="anyskin-raw"></a>
 ## 5.3 Read raw AnySkin values in Python
 
 ```bash
@@ -219,6 +253,7 @@ timestamp, sample = sensor.get_sample()   # sample: 15 values
 sensor.close()
 ```
 
+<a id="anyskin-csv"></a>
 ## 5.4 Record AnySkin CSV
 
 무기한 기록:
@@ -278,6 +313,7 @@ Right CoinFT --/
 
 # 7. CoinFT: single sensor test
 
+<a id="coinft-raw"></a>
 ## 7.1 Raw values only
 
 ```bash
@@ -288,6 +324,7 @@ python coinft/read_coinft.py \
 
 CoinFT CFT24 direct packet은 이 셋업에서 12개의 raw uint16 channel을 제공합니다.
 
+<a id="coinft-zeroed"></a>
 ## 7.2 Tare-zeroed raw
 
 센서를 건드리지 않은 상태에서 실행:
@@ -300,6 +337,7 @@ python coinft/read_coinft.py \
 
 처음 500 sample을 이용해 raw baseline을 잡습니다.
 
+<a id="coinft-wrench"></a>
 ## 7.3 Calibrated 6-axis F/T
 
 ```bash
@@ -323,6 +361,7 @@ python coinft/read_coinft.py --port /dev/ttyUSB0 --mode all
 
 ---
 
+<a id="coinft-single-viz"></a>
 # 8. CoinFT: single visualization
 
 기본 XYZ 한 plot:
@@ -361,6 +400,7 @@ r = Y-axis 초기 범위로 reset
 
 ---
 
+<a id="coinft-dual-viz"></a>
 # 9. CoinFT: dual sensor setup
 
 두 FT232를 연결한 다음:
@@ -404,6 +444,7 @@ Dual reader는 두 UART를 별도 background thread에서 읽습니다. 한 포�
 
 # 10. CoinFT CSV recording
 
+<a id="coinft-single-csv"></a>
 ## Single
 
 ```bash
@@ -422,6 +463,7 @@ raw_zeroed0 ... raw_zeroed11
 Fx_N Fy_N Fz_N Mx_Nm My_Nm Mz_Nm
 ```
 
+<a id="coinft-dual-csv"></a>
 ## Dual
 
 ```bash
@@ -503,6 +545,7 @@ python coinft/visualize_coinft_dual.py \
 
 ---
 
+<a id="bringup-sequence"></a>
 # 13. Recommended bring-up sequence for a new PC
 
 팀원이 처음 받을 때 아래 순서만 따르면 됩니다.
@@ -561,6 +604,7 @@ python coinft/record_coinft_dual.py --left-port <LEFT_PORT> --right-port <RIGHT_
 
 ---
 
+<a id="known-pitfalls"></a>
 # 14. Known pitfalls
 
 - **USB cable:** AnySkin이 켜지지만 serial device가 안 보이면 charge-only cable 가능성 확인.
