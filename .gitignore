@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+
+# Environments
+.venv/
+venv/
+env/
+.conda/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Recorded sensor data
+recordings/*
+!recordings/.gitkeep
+*.csv
+
+# Logs
+*.log
+
+# Nested repositories should not be committed
+**/.git/

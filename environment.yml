@@ -1,0 +1,12 @@
+name: umi-sensor
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - numpy>=1.26
+  - matplotlib>=3.8
+  - pip:
+      - anyskin==1.0.0
+      - pyserial==3.5
+      - onnxruntime>=1.17,<2
